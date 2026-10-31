@@ -24,8 +24,9 @@ async function request(endpoint, options = {}) {
     });
     const data = await res.json().catch(() => null);
     if (!res.ok) {
-      const errorMsg = data?.message || `Request failed with status ${res.status}`;
-      return { ok: false, status: res.status, error: errorMsg, data };
+      const isBackendMissing = res.status === 404 || res.status === 405;
+      const errorMsg = data?.message || (isBackendMissing ? "Backend service endpoint unavailable on static host" : `Request failed with status ${res.status}`);
+      return { ok: false, status: res.status, error: errorMsg, data, backendMissing: isBackendMissing };
     }
     return { ok: true, status: res.status, data: data?.data !== undefined ? data.data : data, raw: data };
   } catch (err) {

@@ -227,7 +227,7 @@ function LoginForm({ go, notify, onLogin }) {
         notify(`Welcome back, ${authedUser.name || "Traveler"}!`);
         onLogin(authedUser);
         return;
-      } else if (!res.offline && res.status === 401) {
+      } else if (!res.offline && !res.backendMissing && res.status !== 405 && res.status !== 404 && res.error) {
         return notify(res.error || "Incorrect username or password. Please try again.");
       }
     } catch {}
@@ -263,23 +263,8 @@ function LoginForm({ go, notify, onLogin }) {
       return;
     }
 
-    const isEmail = lower.includes("@");
-    const newAccount = {
-      ...EMPTY_PROFILE,
-      name: isEmail ? inputUser.split("@")[0] : inputUser,
-      username: inputUser,
-      email: isEmail ? inputUser : `${lower}@raahi.app`,
-      phone: /^\d{10}$/.test(phoneClean) ? phoneClean : "",
-      password: inputPw
-    };
-
-    users.push(newAccount);
-    saveUsers(users);
-    localStorage.setItem(ACTIVE_PROFILE_KEY, JSON.stringify(newAccount));
-    localStorage.setItem("raahi_password", inputPw);
-    localStorage.setItem(LOGGED_IN_KEY, "true");
-    notify(`Welcome, ${newAccount.name}! Account registered.`);
-    onLogin(newAccount);
+    // Do NOT auto-register unregistered users on login. Require an account to exist.
+    return notify("Account not found. Please click 'Create an Account' below to sign up.");
   };
 
   return (
@@ -432,7 +417,7 @@ function PasswordCard({ go, data, setData, notify, onFinishLogin }) {
         notify("Account created for " + (authedUser.name || "you") + ". Logging you in…");
         onFinishLogin(authedUser);
         return;
-      } else if (!res.offline && res.error) {
+      } else if (!res.offline && !res.backendMissing && res.status !== 405 && res.status !== 404 && res.error) {
         return notify(res.error);
       }
     } catch {}
