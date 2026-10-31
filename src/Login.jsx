@@ -352,7 +352,8 @@ function DetailsCard({ go, data, setData }) {
     if (!validEmail(data.email)) return setErr("Enter a valid email address, like name@example.com.");
     if (!validPhone(data.phone)) return setErr("Contact number must be exactly 10 digits.");
     if (data.address.trim().length < 4) return setErr("Enter your address.");
-    if (data.emergency && !validPhone(data.emergency)) return setErr("Emergency contact number must be 10 digits.");
+    if (!data.emergency || !validPhone(data.emergency)) return setErr("Emergency contact number is required and must be 10 digits.");
+    if (data.phone && data.emergency && data.phone === data.emergency) return setErr("Emergency contact number must be different from your primary contact number.");
     setErr(""); go("password");
   };
 
@@ -373,7 +374,7 @@ function DetailsCard({ go, data, setData }) {
           </select>
         </Field>
         <Field id="da" label="Address *"><textarea id="da" value={data.address || ""} placeholder="Street, city, state" rows={2} autoComplete="off" onChange={(e) => set("address")(e.target.value)} /></Field>
-        <PhoneField id="dem" label="Emergency Contact No (Optional)" code={data.emgCode || "+91"} num={data.emergency || ""} onCode={set("emgCode")} onNum={set("emergency")} />
+        <PhoneField id="dem" label="Emergency Contact Number *" code={data.emgCode || "+91"} num={data.emergency || ""} onCode={set("emgCode")} onNum={set("emergency")} />
         <Field id="dm" label="Medical Notes (Optional)"><input id="dm" value={data.medical || ""} placeholder="e.g. None / Asthma / Blood Type O+" autoComplete="off" onChange={(e) => set("medical")(e.target.value)} /></Field>
         <Field id="dph" label="Profile Photo (Optional)">
           <input id="dph" className="login-file" type="file" accept="image/*" key={data.photo ? "has" : "none"} onChange={(e) => readFile(e.target.files[0], (n, url) => url && setData({ ...data, photo: url }), 600)} />

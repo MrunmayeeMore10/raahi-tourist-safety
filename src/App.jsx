@@ -2930,6 +2930,16 @@ function ProfilePage({ userProfile, onUpdateProfile, onLogout, resetDemo, setToa
       setError("Please enter your name.");
       return;
     }
+    const cleanEmg = (editForm.emergency || "").replace(/\D/g, "");
+    if (!cleanEmg || cleanEmg.length !== 10) {
+      setError("Emergency contact number is required and must be 10 digits.");
+      return;
+    }
+    const cleanPhone = (editForm.phone || "").replace(/\D/g, "");
+    if (cleanPhone && cleanPhone === cleanEmg) {
+      setError("Emergency contact number must be different from your primary contact number.");
+      return;
+    }
     const updated = {
       ...profile,
       ...editForm,
@@ -3162,7 +3172,7 @@ function ProfilePage({ userProfile, onUpdateProfile, onLogout, resetDemo, setToa
               </div>
 
               <div className="form-group">
-                <label className="field-label">Emergency Contact Phone</label>
+                <label className="field-label">Emergency Contact Phone <span className="req">*</span></label>
                 <div className="phone-input-combo">
                   <select
                     className="phone-code-select"
