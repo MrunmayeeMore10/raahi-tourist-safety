@@ -362,18 +362,19 @@ function DetailsCard({ go, data, setData }) {
       <h1>Create an Account</h1>
       <p className="login-sub">Enter your details to register</p>
       <div className="login-scroll">
-        <Field id="dn" label="Full Name *"><input id="dn" value={data.name} placeholder="Your full name" onChange={(e) => set("name")(e.target.value)} /></Field>
-        <Field id="dg" label="Gender *"><select id="dg" value={data.gender} onChange={(e) => set("gender")(e.target.value)}><option value="">Select gender</option>{options(GENDERS)}</select></Field>
-        <Field id="de" label="Email *"><input id="de" type="email" value={data.email} placeholder="name@example.com" onChange={(e) => set("email")(e.target.value)} /></Field>
-        <PhoneField id="dp" label="Contact Number *" code={data.phoneCode} num={data.phone} onCode={set("phoneCode")} onNum={set("phone")} />
+        <Field id="dn" label="Full Name *"><input id="dn" value={data.name || ""} placeholder="Your full name" autoComplete="off" onChange={(e) => set("name")(e.target.value)} /></Field>
+        <Field id="du" label="Username (Optional)"><input id="du" value={data.username || ""} placeholder="Choose a username (or leave blank to use name/email)" autoComplete="off" onChange={(e) => set("username")(e.target.value)} /></Field>
+        <Field id="dg" label="Gender *"><select id="dg" value={data.gender || ""} onChange={(e) => set("gender")(e.target.value)}><option value="">Select gender</option>{options(GENDERS)}</select></Field>
+        <Field id="de" label="Email *"><input id="de" type="email" value={data.email || ""} placeholder="name@example.com" autoComplete="off" onChange={(e) => set("email")(e.target.value)} /></Field>
+        <PhoneField id="dp" label="Contact Number *" code={data.phoneCode || "+91"} num={data.phone || ""} onCode={set("phoneCode")} onNum={set("phone")} />
         <Field id="dc" label="Your Country *">
-          <select id="dc" value={data.country} onChange={(e) => setData({ ...data, country: e.target.value, phoneCode: codeFor(e.target.value, data.phoneCode), emgCode: codeFor(e.target.value, data.emgCode) })}>
+          <select id="dc" value={data.country || "India"} onChange={(e) => setData({ ...data, country: e.target.value, phoneCode: codeFor(e.target.value, data.phoneCode), emgCode: codeFor(e.target.value, data.emgCode) })}>
             {options(COUNTRIES)}
           </select>
         </Field>
-        <Field id="da" label="Address *"><textarea id="da" value={data.address} placeholder="Street, city, state" rows={2} onChange={(e) => set("address")(e.target.value)} /></Field>
-        <PhoneField id="dem" label="Emergency Contact No (Optional)" code={data.emgCode} num={data.emergency} onCode={set("emgCode")} onNum={set("emergency")} />
-        <Field id="dm" label="Medical Notes (Optional)"><input id="dm" value={data.medical} placeholder="e.g. None / Asthma / Blood Type O+" onChange={(e) => set("medical")(e.target.value)} /></Field>
+        <Field id="da" label="Address *"><textarea id="da" value={data.address || ""} placeholder="Street, city, state" rows={2} autoComplete="off" onChange={(e) => set("address")(e.target.value)} /></Field>
+        <PhoneField id="dem" label="Emergency Contact No (Optional)" code={data.emgCode || "+91"} num={data.emergency || ""} onCode={set("emgCode")} onNum={set("emergency")} />
+        <Field id="dm" label="Medical Notes (Optional)"><input id="dm" value={data.medical || ""} placeholder="e.g. None / Asthma / Blood Type O+" autoComplete="off" onChange={(e) => set("medical")(e.target.value)} /></Field>
         <Field id="dph" label="Profile Photo (Optional)">
           <input id="dph" className="login-file" type="file" accept="image/*" key={data.photo ? "has" : "none"} onChange={(e) => readFile(e.target.files[0], (n, url) => url && setData({ ...data, photo: url }), 600)} />
           {data.photo && <img src={data.photo} alt="Photo preview" style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 12, marginTop: 8, display: "block", border: "2px solid #174d41" }} />}
@@ -400,9 +401,10 @@ function PasswordCard({ go, data, setData, notify, onFinishLogin }) {
 
   const create = async () => {
     if (!checks.every((c) => c[1])) return notify("Meet all the password requirements first.");
+    const chosenUsername = (data.username && data.username.trim()) || (data.name ? data.name.trim() : (data.email ? data.email.split("@")[0] : "user"));
     const updated = {
       ...data,
-      username: data.name ? data.name.trim() : (data.email ? data.email.split("@")[0] : "user"),
+      username: chosenUsername,
       password: pw
     };
     if (setData) setData(updated);
@@ -462,18 +464,17 @@ function PasswordCard({ go, data, setData, notify, onFinishLogin }) {
 export default function LoginScreen({ onAuthenticated }) {
   const [view, setView] = useState("login");
   const [toast, setToast] = useState("");
-  const [data, setDataRaw] = useState(() => {
-    initUsers();
-    try {
-      const active = localStorage.getItem(ACTIVE_PROFILE_KEY);
-      if (active) return { ...EMPTY_PROFILE, ...JSON.parse(active) };
-    } catch {}
-    return { ...EMPTY_PROFILE, ...DEMO_USER };
-  });
+  const [data, setDataRaw] = useState(() => ({ ...EMPTY_PROFILE }));
 
   const setData = (d) => {
     setDataRaw(d);
-    try { localStorage.setItem(ACTIVE_PROFILE_KEY, JSON.stringify(d)); } catch {}
+  };
+
+  const go = (nextView) => {
+    if (nextView === "details") {
+      setDataRaw({ ...EMPTY_PROFILE });
+    }
+    setView(nextView);
   };
 
   const notify = (m) => {

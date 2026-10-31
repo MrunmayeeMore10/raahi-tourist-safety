@@ -517,6 +517,8 @@ function App() {
     try {
       localStorage.removeItem("raahi_logged_in");
       localStorage.removeItem("raahi_token");
+      localStorage.removeItem("raahi_profile");
+      localStorage.removeItem("raahi_password");
     } catch {}
   }, []);
 
