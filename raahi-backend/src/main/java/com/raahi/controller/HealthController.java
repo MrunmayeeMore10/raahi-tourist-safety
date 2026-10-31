@@ -12,7 +12,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/health")
 public class HealthController {
 
     private final DataSource dataSource;
@@ -21,12 +20,13 @@ public class HealthController {
         this.dataSource = dataSource;
     }
 
-    @GetMapping
+    @GetMapping({"/", "/api", "/api/health"})
     public ResponseEntity<Map<String, Object>> health() {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("status", "UP");
         map.put("service", "RAAHI Smart Tourist Monitoring & Safety System");
         map.put("version", "1.0.0");
+        map.put("message", "RAAHI Spring Boot REST Backend is running successfully.");
         map.put("timestamp", LocalDateTime.now().toString());
 
         boolean sqlOk = false;
@@ -35,6 +35,14 @@ public class HealthController {
         } catch (Exception ignored) {}
         map.put("sqlDatabase", sqlOk ? "CONNECTED (PostgreSQL)" : "STANDALONE_READY");
         map.put("mongoDatabase", "CONNECTED (MongoDB)");
+
+        Map<String, String> endpoints = new LinkedHashMap<>();
+        endpoints.put("health", "GET /api/health");
+        endpoints.put("login", "POST /api/auth/login");
+        endpoints.put("register", "POST /api/auth/register");
+        endpoints.put("sos", "POST /api/emergency/sos");
+        endpoints.put("safetyCheck", "POST /api/safety/check");
+        map.put("apiEndpoints", endpoints);
 
         return ResponseEntity.ok(map);
     }

@@ -49,6 +49,8 @@ public class SecurityConfig {
             .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
+                    "/",
+                    "/api",
                     "/api/auth/**",
                     "/api/health",
                     "/api/emergency/sos",
